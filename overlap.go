@@ -45,10 +45,9 @@ func SimpleMA(values []float64, timePeriod int) ([]float64, error) {
 	}
 	movAvgs := make([]float64, 0, len(values)-timePeriod+1)
 	timePeriodFloat := float64(timePeriod)
-	movAvgs = append(movAvgs, runningTotal/timePeriodFloat)
 	for i, val := range values[timePeriod:] {
-		runningTotal = runningTotal + val - values[i]
 		movAvgs = append(movAvgs, runningTotal/timePeriodFloat)
+		runningTotal = runningTotal + val - values[i]
 	}
 	return movAvgs, nil
 }
