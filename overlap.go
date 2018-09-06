@@ -45,9 +45,32 @@ func SimpleMA(values []float64, timePeriod int) ([]float64, error) {
 	}
 	movAvgs := make([]float64, 0, len(values)-timePeriod+1)
 	timePeriodFloat := float64(timePeriod)
+	movAvgs = append(movAvgs, runningTotal/timePeriodFloat)
 	for i, val := range values[timePeriod:] {
-		movAvgs = append(movAvgs, runningTotal/timePeriodFloat)
 		runningTotal = runningTotal + val - values[i]
+		movAvgs = append(movAvgs, runningTotal/timePeriodFloat)
+	}
+	return movAvgs, nil
+}
+
+func ExponentialMA(values []float64, timePeriod int) ([]float64, error) {
+	if timePeriod < 1 {
+		return nil, ErrNegativeTimePeriod
+	}
+	if len(values) < timePeriod {
+		return nil, ErrTimePeriodTooBig
+	}
+	k := 2.0 / float64(timePeriod+1)
+	runningTotal := values[0]
+	for _, val := range values[1:timePeriod] {
+		runningTotal += val
+	}
+	movAvgs := make([]float64, 0, len(values)-timePeriod+1)
+	runningTotal /= float64(timePeriod)
+	movAvgs = append(movAvgs, runningTotal)
+	for _, val := range values[timePeriod:] {
+		runningTotal = (val-runningTotal)*k + runningTotal
+		movAvgs = append(movAvgs, runningTotal)
 	}
 	return movAvgs, nil
 }
