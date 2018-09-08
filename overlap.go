@@ -1,6 +1,8 @@
 package ta
 
-import "errors"
+import (
+	"errors"
+)
 
 // MAType indicates type of moving average
 type MAType uint8
@@ -53,6 +55,7 @@ func SimpleMA(values []float64, timePeriod int) ([]float64, error) {
 	return movAvgs, nil
 }
 
+// ExponentialMA
 func ExponentialMA(values []float64, timePeriod int) ([]float64, error) {
 	if timePeriod < 1 {
 		return nil, ErrNegativeTimePeriod
@@ -73,4 +76,28 @@ func ExponentialMA(values []float64, timePeriod int) ([]float64, error) {
 		movAvgs = append(movAvgs, runningTotal)
 	}
 	return movAvgs, nil
+}
+
+// DoubleExponentialMA
+func DoubleExponentialMA(values []float64, timePeriod int) ([]float64, error) {
+	if timePeriod < 1 {
+		return nil, ErrNegativeTimePeriod
+	}
+	if len(values)+1 < 2*timePeriod {
+		return nil, ErrTimePeriodTooBig
+	}
+	fEMA, err := ExponentialMA(values, timePeriod)
+	if err != nil {
+		return nil, err
+	}
+	sEMA, err := ExponentialMA(fEMA, timePeriod)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range sEMA {
+		sEMA[i] = 2.0*fEMA[i+timePeriod-1] - sEMA[i]
+	}
+
+	return sEMA, nil
 }
